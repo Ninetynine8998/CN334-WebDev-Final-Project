@@ -5,6 +5,7 @@ import { FaFacebook } from "react-icons/fa";
 import { AiFillTwitterCircle } from "react-icons/ai";
 import { ImMail4 } from "react-icons/im";
 import { RiInstagramFill } from "react-icons/ri";
+import { BLUE_COLOR, DARK_BLUE_COLOR } from "./Constant";
 
 
 export default function Footer({ children , style}) {
@@ -59,7 +60,7 @@ export default function Footer({ children , style}) {
             <style jsx>{`
         .footer {
         display: flex;
-        background-color: #086886;
+        background-color: ${BLUE_COLOR};
         width: 100%;
         color: white;
         }

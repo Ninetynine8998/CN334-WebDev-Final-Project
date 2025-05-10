@@ -5,11 +5,11 @@ export default function Container({ children }) {
     return (
         <div>
             <div style={{ paddingTop: "80px" }}>
-            <Header />
+                <Header />
             </div>
-                
+
             {children}
-            <Footer style={{ marginTop:'10%'}}/>
+            <Footer style={{ marginTop: '10%' }} />
         </div>
     )
 }

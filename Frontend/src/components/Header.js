@@ -1,11 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import Link from 'next/link'
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { FaCartShopping } from "react-icons/fa6";
 import { YELLOW_COLOR } from "./Constant";
 
 export default function Header() {
+    const router = useRouter();
     return (
         <nav className="header" style={myStyles.header}>
             <div style={{
@@ -34,8 +36,9 @@ export default function Header() {
                     </Link>
                 </div>
 
+
                 <div style={{ width: "20%", display: "flex", justifyContent: "center" }}>
-                    <FaCartShopping size={32} style={{ cursor: "pointer" }} />
+                    <FaCartShopping onClick={() => router.push(`/cart`)} size={32} style={{ cursor: "pointer" }} />
                 </div>
 
             </div>

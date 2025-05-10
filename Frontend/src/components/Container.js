@@ -8,8 +8,10 @@ export default function Container({ children }) {
                 <Header />
             </div>
 
-            {children}
-            
+            <div style={{ minHeight: "200px" }}>
+                {children}
+            </div>
+
             <Footer style={{ marginTop: '10%' }} />
         </div>
     )

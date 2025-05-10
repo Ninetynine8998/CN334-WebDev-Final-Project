@@ -48,7 +48,7 @@ export default function Checkout() {
             timer = setTimeout(() => setCountdown(countdown - 1), 1000);
         }
 
-        if (countdown == 0){
+        if (countdown == 0) {
             finishProcess();
         }
 
@@ -146,6 +146,7 @@ export default function Checkout() {
                         ) : (
                             <div style={{ textAlign: 'center' }}>
                                 <Image
+                                    onClick={() => { finishProcess() }}
                                     src="/promptpay-qr.svg"
                                     alt="promptpay"
                                     width={300}

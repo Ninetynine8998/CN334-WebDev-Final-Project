@@ -62,12 +62,14 @@ export default function Sheet() {
                 color: WHITE_COLOR,
                 display: "flex",
                 flexDirection: "column",
+                justifyContent: "space-between", // ✅ ดันส่วนล่างไปสุด
 
                 display: 'flex',
                 alignItems: "start",
 
                 fontWeight: "bold",
-                minWidth: "160px", //  ความกว้างคงที่เพื่อ scroll ได้
+                minWidth: "200px", //  ความกว้างคงที่เพื่อ scroll ได้
+                minHeight: "200px",
                 flexShrink: 0       //  ห้ามบีบการ์ดอัตโนมัติ
             }}
         >
@@ -75,6 +77,7 @@ export default function Sheet() {
                 className='contend'
                 style={{
                     padding: "10px",
+                    flexGrow: 1, // ✅ ให้เต็มพื้นที่เพื่อดันปุ่มด้านล่าง
                 }}
             >
 
@@ -193,6 +196,7 @@ export default function Sheet() {
                                 overflowX: "auto",
                                 gap: "20px",
                                 paddingBottom: "10px",
+
                             }}
                         >
                             {groupedByLevel[level].map(renderSheetCard)}

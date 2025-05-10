@@ -1,44 +1,50 @@
 "use client";
 
-import { redirect } from 'next/navigation'
-
 import Image from "next/image";
 import Container from "@/components/Container";
 
-import { YELLOW_COLOR, WHITE_COLOR } from "@/components/Constant";
-
 export default function Sheet() {
-    return (
-        <div>
-            <Container>
-                <h1>Sheet</h1>
-                <div className="image-section" style={{
-                    height: "10%",
-                }}>
-                    <h1 style={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        position: 'relative',
+  return (
+    <div>
+      <Container>
+        <div
+          className="image-section"
+          style={{
+            position: "relative",
+            width: "100%",
+            height: "250px", // ปรับความสูงได้
+            overflow: "hidden",
+          }}
+        >
+          {/* ✅ พื้นหลังรูปภาพ */}
+          <Image
+            src="/image2.svg"
+            alt="background"
+            fill // ทำให้ภาพเต็มพื้นที่ของ div
+            style={{
+              objectFit: "cover",
+              zIndex: 0,
+            }}
+          />
 
-                    }}>
-                        {'ภาษาไทย'}
-                    </h1>
-                    <Image
-                        aria-hidden
-                        src="/image2.svg"
-                        alt="icon icon"
-                        width={250}
-                        height={400}
-                        style={{
-                            objectFit: "cover",
-                            objectPosition: "100% 70%",
-                            width: "100%",
-                        }}
-                    />
-                </div>
-
-
-            </Container>
+          {/* ✅ ตัวหนังสือซ้อนกลาง */}
+          <h1
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              color: "white",
+              fontSize: "2.5rem",
+              fontWeight: "bold",
+              zIndex: 1,
+              textShadow: "0 0 5px #000",
+            }}
+          >
+            ภาษาไทย
+          </h1>
         </div>
-    )
+      </Container>
+    </div>
+  );
 }

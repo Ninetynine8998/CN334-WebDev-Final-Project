@@ -7,9 +7,11 @@ import { ImMail4 } from "react-icons/im";
 import { RiInstagramFill } from "react-icons/ri";
 
 
-export default function Header({ children }) {
+export default function Footer({ children , style}) {
     return (
-        <div className="footer">
+        <div className="footer"
+        style={{...style}}
+        >
             <div className="icon-section">
                 <div className="icon">
                     <Image

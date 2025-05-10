@@ -3,10 +3,11 @@
 import Image from "next/image";
 import Link from 'next/link'
 import { FaCartShopping } from "react-icons/fa6";
+import { YELLOW_COLOR } from "./Constant";
 
 export default function Header() {
     return (
-        <div className="header" style={myStyles.header}>
+        <nav className="header" style={myStyles.header}>
             <div style={{
                 display: "flex",
                 justifyContent: "center",
@@ -34,7 +35,7 @@ export default function Header() {
                 </div>
 
                 <div style={{ width: "20%", display: "flex", justifyContent: "center" }}>
-                    <FaCartShopping size={32} />
+                    <FaCartShopping size={32} style={{ cursor: "pointer" }} />
                 </div>
 
             </div>
@@ -47,19 +48,21 @@ export default function Header() {
                 }
             `}</style>
 
-        </div>
+        </nav>
     )
 }
 
 const myStyles = {
     header: {
-        backgroundColor: "#F6B154",
+        backgroundColor: YELLOW_COLOR,
         width: "100%",
         color: "white",
         padding: "20px",
-        display: "absolute",
-        position: "fixed",
+        top: 0,              // ✅ เพิ่มเพื่อปักไว้ด้านบน
+        left: 0,             // ✅ เพิ่มเพื่อให้แนบขอบซ้าย
 
+        position: "fixed",
+        zIndex: 2,
     },
 }
 

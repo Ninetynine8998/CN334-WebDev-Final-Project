@@ -258,16 +258,6 @@ export default function Dashboard() {
                         />
                     </div>
 
-                    {/* รายการชีท */}
-                    {/* <div style={{
-                        display: "flex",
-                        gap: "20px",
-                        flexWrap: "wrap",
-                    }}>
-                        {mockSheet.length !== 0 ? mockSheet.map(renderSheetCard) : (
-                            <div><h1>No data</h1></div>
-                        )}
-                    </div> */}
                     <div style={{
                         display: "flex",
                         gap: "20px",

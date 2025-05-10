@@ -1,8 +1,10 @@
 # cart_service/urls.py
 from django.urls import path
-from . import views
+from .views import AddToCartView, ViewCartView, RemoveFromCartView
 
 urlpatterns = [
-    # ตัวอย่างเส้นทาง
-    path('get_order/', views.get_order, name='get_order'),
+    path('add_to_cart/', AddToCartView.as_view(), name='add_to_cart'),
+    path('view_cart/', ViewCartView.as_view(), name='view_cart'), # เพิ่ม endpoint สำหรับดูตะกร้า
+    path('delete/item/', RemoveFromCartView.as_view(), name='remove_cart_item'), # เปลี่ยน path ตรงนี้
+
 ]

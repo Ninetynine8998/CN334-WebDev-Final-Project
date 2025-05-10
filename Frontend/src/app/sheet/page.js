@@ -130,7 +130,6 @@ export default function Sheet() {
     return (
         <div>
             <Container>
-                <h1>Sheet</h1>
                 <div className="image-section" style={{
                     height: "10%",
 

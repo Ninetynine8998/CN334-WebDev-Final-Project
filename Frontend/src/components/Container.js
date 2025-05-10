@@ -9,6 +9,7 @@ export default function Container({ children }) {
             </div>
 
             {children}
+            
             <Footer style={{ marginTop: '10%' }} />
         </div>
     )

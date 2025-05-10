@@ -137,7 +137,7 @@ export default function Cart() {
                     <h1
                         style={{
                             position: "absolute",
-                            top: "35%",
+                            top: "30%",
                             color: "white",
                             fontSize: "3rem",
                             fontWeight: "bold",

@@ -40,12 +40,14 @@ INSTALLED_APPS = [
     'rest_framework', # เพิ่มบรรทัดนี้
     'sheets_service', 
     'rest_framework.authtoken', # <--- ต้องมีบรรทัดนี้
+    'corsheaders',
 
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -148,3 +150,5 @@ AUTH_TOKEN_MODEL = 'sheets_service.ExpiringToken'
 # ตัวอย่าง: หมดอายุใน 24 ชั่วโมง (24 * 60 * 60 = 86400 วินาที)
 # TOKEN_EXPIRY_TIME = 86400 # กำหนดค่านี้ขึ้นมาเอง ใช้ชื่ออะไรก็ได้ที่คุณเข้าใจ
 TOKEN_EXPIRY_TIME = 86400 # กำหนดค่านี้ขึ้นมาเอง ใช้ชื่ออะไรก็ได้ที่คุณเข้าใจ
+
+CORS_ALLOW_ALL_ORIGINS = True

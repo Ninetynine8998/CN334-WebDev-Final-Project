@@ -24,7 +24,7 @@ class CartItemInline(admin.TabularInline): # หรือ admin.StackedInline �
     model = CartItem
     extra = 0 # ไม่แสดงฟอร์มว่างเพิ่มเติมตอนแรก
     # หากต้องการกำหนดฟิลด์ที่จะแสดงใน Inline
-    fields = ('id','sheet', 'quantity')
+    fields = ('sheet', 'quantity')
     readonly_fields = ('sheet',) # อาจทำให้ sheet อ่านอย่างเดียวหลังสร้าง
 
 
@@ -33,7 +33,7 @@ class OrderItemInline(admin.TabularInline): # หรือ admin.StackedInline
     model = OrderItem
     extra = 0
     # หากต้องการกำหนดฟิลด์ที่จะแสดงใน Inline
-    fields = ('id','sheet', 'quantity', 'price')
+    fields = ('sheet', 'quantity', 'price')
     readonly_fields = ('sheet', 'price') # อาจทำให้ sheet, price อ่านอย่างเดียว
 
 

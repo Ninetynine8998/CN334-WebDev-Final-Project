@@ -24,7 +24,7 @@ class CartItemInline(admin.TabularInline): # หรือ admin.StackedInline �
     model = CartItem
     extra = 0 # ไม่แสดงฟอร์มว่างเพิ่มเติมตอนแรก
     # หากต้องการกำหนดฟิลด์ที่จะแสดงใน Inline
-    fields = ('sheet', 'quantity')
+    fields = ('id','sheet', 'quantity')
     readonly_fields = ('sheet',) # อาจทำให้ sheet อ่านอย่างเดียวหลังสร้าง
 
 
@@ -33,7 +33,7 @@ class OrderItemInline(admin.TabularInline): # หรือ admin.StackedInline
     model = OrderItem
     extra = 0
     # หากต้องการกำหนดฟิลด์ที่จะแสดงใน Inline
-    fields = ('sheet', 'quantity', 'price')
+    fields = ('id','sheet', 'quantity', 'price')
     readonly_fields = ('sheet', 'price') # อาจทำให้ sheet, price อ่านอย่างเดียว
 
 
@@ -94,17 +94,37 @@ class OrderItemAdmin(admin.ModelAdmin):
 class ExpiringTokenAdmin(admin.ModelAdmin):
     list_display = ('key', 'user', 'created') # key, user, created คือฟิลด์ที่มีใน Model
 
+# ModelAdmin สำหรับ Subject
+class SubjectAdmin(admin.ModelAdmin):
+    # *** เพิ่ม 'id' เข้าไปใน list_display เพื่อให้แสดงคอลัมน์ ID ในหน้ารายการ ***
+    list_display = ('id', 'name')
+    # ฟิลด์ที่ใช้ในการค้นหา
+    search_fields = ('name',)
+    # ฟิลด์ที่ใช้ในการกรอง
+    list_filter = ('name',) # อาจกรองด้วยชื่อ หรือฟิลด์อื่นที่เหมาะสม
+
+# ModelAdmin สำหรับ Sheet
+class SheetAdmin(admin.ModelAdmin):
+    # *** เพิ่ม 'id' เข้าไปใน list_display เพื่อให้แสดงคอลัมน์ ID ในหน้ารายการ ***
+    # และเพิ่มฟิลด์อื่นๆ ที่ต้องการให้แสดงในหน้ารายการด้วย
+    list_display = ('id', 'title', 'subject', 'subject_code', 'level', 'price', 'create_date') # ตัวอย่างฟิลด์ที่น่าจะใช้บ่อยในรายการ
+    # ฟิลด์ที่ใช้ในการค้นหา
+    search_fields = ('title', 'subject_code', 'description') # ค้นหาจากชื่อชีท, รหัสวิชา, คำอธิบาย
+    # ฟิลด์ที่ใช้ในการกรอง
+    list_filter = ('subject', 'level') # กรองตามวิชา, ระดับ
+    # อาจเพิ่ม Inline ถ้ามี Model ย่อยที่เชื่อมโยงกับ Sheet และต้องการแสดงในหน้าแก้ไข Sheet
 # --- ลงทะเบียน Models กับ Admin Site ---
 
 # ใช้ admin.site.register() คู่กับคลาส ModelAdmin ที่สร้างขึ้น
 # ถ้าไม่มีคลาส ModelAdmin จะใช้การแสดงผล default
-admin.site.register(Subject, admin.ModelAdmin) # หรือจะสร้าง SubjectAdmin เองก็ได้
-admin.site.register(Sheet, admin.ModelAdmin)   # หรือจะสร้าง SheetAdmin เองก็ได้
-admin.site.register(Cart, CartAdmin)          # ลงทะเบียน Cart กับ CartAdmin
-# admin.site.register(CartItem, CartItemAdmin) # จะลงทะเบียน CartItem แยก หรือดูจาก CartInline ก็ได้
-admin.site.register(Order, OrderAdmin)        # ลงทะเบียน Order กับ OrderAdmin
-# admin.site.register(OrderItem, OrderItemAdmin) # จะลงทะเบียน OrderItem แยก หรือดูจาก OrderItemInline ก็ได้
+admin.site.register(Subject, SubjectAdmin) # ลงทะเบียน Subject กับ SubjectAdmin
+admin.site.register(Sheet, SheetAdmin)     # ลงทะเบียน Sheet กับ SheetAdmin
+admin.site.register(Cart, CartAdmin)      # ลงทะเบียน Cart กับ CartAdmin
+# admin.site.register(CartItem, CartItemAdmin) # ลงทะเบียน CartItem ถ้าต้องการจัดการแยก
+admin.site.register(Order, OrderAdmin)    # ลงทะเบียน Order กับ OrderAdmin
+# admin.site.register(OrderItem, OrderItemAdmin) # ลงทะเบียน OrderItem ถ้าต้องการจัดการแยก
 admin.site.register(ExpiringToken, ExpiringTokenAdmin) # ลงทะเบียน Custom Token Model
+
 
 
 # ถ้าคุณต้องการลงทะเบียน Token มาตรฐานของ DRF ด้วย (ไม่น่าจะจำเป็นถ้าใช้ Custom Token อย่างเดียว)

@@ -3,18 +3,6 @@ from django.contrib import admin
 # นำเข้า Models ทั้งหมดที่เราต้องการจัดการผ่าน Admin
 from .models import Subject, Sheet, Cart, CartItem, Order, OrderItem, ExpiringToken
 from rest_framework.authtoken.models import Token as DefaultToken # นำเข้า Token มาตรฐานเพื่อลงทะเบียนด้วย ถ้าจำเป็น
-# # ลงทะเบียน Models ใน Admin Site
-# admin.site.register(Subject)
-# admin.site.register(Sheet)
-# admin.site.register(Cart) # <-- เพิ่มบรรทัดนี้เพื่อลงทะเบียน Model Cart
-
-# # คุณสามารถลงทะเบียน Model อื่นๆ ที่คุณต้องการจัดการผ่าน Admin ได้เช่นกัน
-# # admin.site.register(Cart)
-# # admin.site.register(CartItem)
-# # admin.site.register(Order)
-# # admin.site.register(OrderItem)
-
-# sheets_service/admin.py
 
 
 # --- Inline Models (สำหรับแสดงรายการย่อยในหน้าหลัก) ---
@@ -35,9 +23,6 @@ class OrderItemInline(admin.TabularInline): # หรือ admin.StackedInline
     # หากต้องการกำหนดฟิลด์ที่จะแสดงใน Inline
     fields = ('sheet', 'quantity', 'price')
     readonly_fields = ('sheet', 'price') # อาจทำให้ sheet, price อ่านอย่างเดียว
-
-
-# --- ModelAdmin (สำหรับการปรับแต่งการแสดงผลใน Admin) ---
 
 # ModelAdmin สำหรับ Cart
 class CartAdmin(admin.ModelAdmin):
@@ -112,11 +97,7 @@ class SheetAdmin(admin.ModelAdmin):
     search_fields = ('name', 'subject_code', 'description') # ค้นหาจากชื่อชีท, รหัสวิชา, คำอธิบาย
     # ฟิลด์ที่ใช้ในการกรอง
     list_filter = ('subject', 'level') # กรองตามวิชา, ระดับ
-    # อาจเพิ่ม Inline ถ้ามี Model ย่อยที่เชื่อมโยงกับ Sheet และต้องการแสดงในหน้าแก้ไข Sheet
-# --- ลงทะเบียน Models กับ Admin Site ---
 
-# ใช้ admin.site.register() คู่กับคลาส ModelAdmin ที่สร้างขึ้น
-# ถ้าไม่มีคลาส ModelAdmin จะใช้การแสดงผล default
 admin.site.register(Subject, SubjectAdmin) # ลงทะเบียน Subject กับ SubjectAdmin
 admin.site.register(Sheet, SheetAdmin)     # ลงทะเบียน Sheet กับ SheetAdmin
 admin.site.register(Cart, CartAdmin)      # ลงทะเบียน Cart กับ CartAdmin
@@ -125,11 +106,3 @@ admin.site.register(Order, OrderAdmin)    # ลงทะเบียน Order �
 # admin.site.register(OrderItem, OrderItemAdmin) # ลงทะเบียน OrderItem ถ้าต้องการจัดการแยก
 admin.site.register(ExpiringToken, ExpiringTokenAdmin) # ลงทะเบียน Custom Token Model
 
-
-
-# ถ้าคุณต้องการลงทะเบียน Token มาตรฐานของ DRF ด้วย (ไม่น่าจะจำเป็นถ้าใช้ Custom Token อย่างเดียว)
-# แต่ถ้าใช้ทั้งสองระบบ อาจจะต้องลงทะเบียน Token มาตรฐานด้วย
-# from rest_framework.authtoken.models import Token as DefaultToken
-# class DefaultTokenAdmin(admin.ModelAdmin):
-#     list_display = ('key', 'user', 'created')
-# admin.site.register(DefaultToken, DefaultTokenAdmin)

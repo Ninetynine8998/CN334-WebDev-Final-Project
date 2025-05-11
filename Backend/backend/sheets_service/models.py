@@ -25,16 +25,6 @@ class Subject(models.Model):
     def __str__(self):
         return self.name
 
-# class Sheet(models.Model):
-#     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
-#     title = models.CharField(max_length=200)
-#     content = models.TextField()
-#     price = models.DecimalField(max_digits=10, decimal_places=2)
-#     # เพิ่มฟิลด์อื่นๆ ที่เกี่ยวข้อง (เช่น ผู้แต่ง, วันที่สร้าง)
-
-#     def __str__(self):
-#         return self.title
-
 class Sheet(models.Model):
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     name = models.CharField(max_length=200) # ตรงกับ name ใน ER
@@ -62,15 +52,6 @@ class Cart(models.Model):
     def __str__(self):
         return f"Cart of {self.user.username}" # ตะกร้าของ user นี้
 
-# class CartItem(models.Model):
-#     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
-#     sheet = models.ForeignKey(Sheet, on_delete=models.CASCADE)
-#     quantity = models.PositiveIntegerField(default=1)
-#     # เพิ่มฟิลด์อื่นๆ ที่เกี่ยวข้อง (เช่น added_at)
-
-#     def __str__(self):
-#         return f"{self.quantity} x {self.sheet.title} in {self.cart.user.username}'s cart" # จำนวน x ชื่อชีท ในตะกร้าของ user นี้
-
 class CartItem(models.Model):
     # แก้ไขบรรทัดนี้: เพิ่ม related_name='items'
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
@@ -81,14 +62,6 @@ class CartItem(models.Model):
     def __str__(self):
         return f"{self.quantity} x {self.sheet.title} in {self.cart.user.username}'s cart"
 
-# class Order(models.Model):
-#     user = models.ForeignKey(User, on_delete=models.CASCADE)
-#     tel = models.CharField(max_length=20)
-#     email = models.EmailField()
-#     # เพิ่มฟิลด์อื่นๆ ที่เกี่ยวข้อง (เช่น total_amount, created_at, status)
-
-#     def __str__(self):
-#         return f"Order by {self.user.username}" # ออเดอร์โดย user นี้
 
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

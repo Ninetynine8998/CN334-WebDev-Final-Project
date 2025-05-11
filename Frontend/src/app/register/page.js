@@ -31,18 +31,6 @@ export default function Register() {
             confirm_password: confirmPassword,
         }
 
-        // await axios.post(API_IP + '/api/register/', data)
-        //     .then(res => {
-        //         console.log(res)
-        //         toast.success("ลงทะเบียนสำเร็จ");
-
-        //     })
-        //     .catch(err => {
-        //         const message = err.response?.data?.username[0] || "เกิดข้อผิดพลาดโปรดเช็คข้อมูล";
-        //         toast.error(message);
-
-        //         console.log(err.response.data)
-        //     })
         try {
             const res = await axios.post(API_IP + '/api/register/', data);
             toast.success("ลงทะเบียนสำเร็จ");

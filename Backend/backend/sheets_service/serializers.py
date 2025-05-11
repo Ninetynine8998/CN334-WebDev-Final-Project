@@ -98,13 +98,6 @@ class OrderItemSerializer(serializers.ModelSerializer):
          model = OrderItem
          fields = ('order_item_id', 'order', 'sheet', 'quantity', 'price') 
 
-# class OrderSerializer(serializers.ModelSerializer):
-#     items = OrderItemSerializer(many=True, read_only=True) # แสดงรายการสินค้าในออเดอร์ (หลายรายการ) แบบอ่านอย่างเดียว
-
-#     class Meta:
-#         model = Order
-#         fields = '__all__' # แสดงทุกฟิลด์ในโมเดล Order
-
 # Serializer สำหรับ Order
 class OrderSerializer(serializers.ModelSerializer):
     order_id = serializers.IntegerField(source='id', read_only=True)

@@ -1,6 +1,6 @@
 "use client";
 // 'use server';
-import { redirect } from 'next/navigation'
+import { redirect, useRouter } from 'next/navigation'
 // import { revalidatePath } from 'next/cache'
 
 import Image from "next/image";
@@ -10,42 +10,10 @@ import { YELLOW_COLOR, WHITE_COLOR, API_IP } from "@/components/Constant";
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const mockData = [
-    {
-        id: 1,
-        name: "ภาษาไทย",
-    },
-    {
-        id: 2,
-        name: "ชีวะวิทยา",
-    },
-    {
-        id: 3,
-        name: "ภาษาอังกฤษ",
-    },
-    {
-        id: 4,
-        name: "ภาษาอังกฤษ",
-    },
-    {
-        id: 5,
-        name: "ภาษาอังกฤษ",
-    },
-    {
-        id: 6,
-        name: "ภาษาอังกฤษ",
-    },
-    {
-        id: 7,
-        name: "ภาษาอังกฤษ",
-    },
-    {
-        id: 8,
-        name: "ภาษาอังกฤษ",
-    },
-]
 
 export default function Home() {
+    const router = useRouter();
+    
     const [allSubject, setAllSubject] = useState(null);
 
     useEffect(() => {
@@ -58,32 +26,25 @@ export default function Home() {
                 console.error('can not get subject:', err);
             }
         };
-
         fetchData();
     }, []);
 
-
     const render_subject = (subject) => {
         return (
-            <div key={subject.id}>
+            <div key={subject.subject_id}>
                 <div
-                    // key={subject.id}
                     className='subject-card'
                     onClick={() => {
-                        // revalidatePath(`/sheet`);
-                        redirect(`/sheet`);
+                        // redirect(`/sheet`);
+                        router.push(`/sheet?subject_id=${subject.subject_id}&subject_name=${subject.name}`);
                     }}
                     style={{
-                        // width: "100%",
-                        // height: "100px",
                         backgroundColor: YELLOW_COLOR,
                         fontSize: "180%",
                         color: WHITE_COLOR,
                         borderRadius: "5%",
                     }}>
                     <div className="subject-list" style={{
-                        // width: "100%",
-                        // height: "100%",
                         padding: "20px",
 
                         justifyContent: "center",
@@ -95,7 +56,12 @@ export default function Home() {
                             display: 'flex',
                             justifyContent: 'center',
                         }}>{`วิชา`}</h1>
-                        <p>{subject.name}</p>
+                        <p
+                            style={{
+                                display: 'flex',
+                                justifyContent: 'center'
+                            }}
+                        >{subject.name}</p>
                     </div>
                 </div>
 
@@ -149,7 +115,7 @@ export default function Home() {
 
                         }}
                     >
-                        {mockData.map((item) => render_subject(item))}
+                        {allSubject?.map((item) => render_subject(item))}
                     </div>
 
                 </div>

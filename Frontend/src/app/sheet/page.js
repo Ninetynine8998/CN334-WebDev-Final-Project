@@ -1,25 +1,20 @@
 "use client";
 
-import { redirect } from 'next/navigation'
+import { redirect, useSearchParams } from 'next/navigation'
 import { useRouter } from 'next/navigation';
 
 import Image from "next/image";
 import Container from "@/components/Container";
 
-import { YELLOW_COLOR, WHITE_COLOR, DARK_BLUE_COLOR } from "@/components/Constant";
+import { YELLOW_COLOR, WHITE_COLOR, DARK_BLUE_COLOR, API_IP } from "@/components/Constant";
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { IoLogoDropbox } from "react-icons/io";
+
 
 // mock data
 const mockData = [
-    { 
-        sheed_id: 1, 
-        name: "การอ่าน และจับใจคาม", 
-        subject_code: "TH112", 
-        level: "ม.4", 
-        price: 20, 
-        date: "4-05-2025" },
-
-
-        
+    { sheed_id: 1, name: "การอ่าน และจับใจคาม", subject_code: "TH112", level: "ม.4", price: 20, date: "4-05-2025" },
     { sheed_id: 2, name: "การอ่าน และจับใจคาม", subject_code: "TH112", level: "ม.5", price: 20, date: "4-05-2025" },
     { sheed_id: 3, name: "การอ่าน และจับใจคาม", subject_code: "TH112", level: "ม.6", price: 20, date: "4-05-2025" },
     { sheed_id: 4, name: "การอ่าน และจับใจคาม", subject_code: "TH112", level: "ม.6", price: 20, date: "4-05-2025" },
@@ -51,20 +46,68 @@ const mockData = [
 ];
 
 export default function Sheet() {
+
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const subject_id = searchParams.get("subject_id");
+    const subject_name = searchParams.get("subject_name");
+
+    const [sheet, setSheet] = useState(null);
+
+    // useEffect(() => {
+    //     console.log("subject_id", subject_id);
+    //     console.log("subject_name", subject_name);
+    //     // fetch data from API using subject_id
+    // }, [subject_id]);
+
+    useEffect(() => {
+        if (!subject_id) return;
+
+        const fetchData = async () => {
+            try {
+                const res = await axios.get(API_IP + `/api/select_sheet/?subject_id=${subject_id}`);
+                console.log('sheet:', res.data.sheet);
+                setSheet(res.data.sheet);
+            } catch (err) {
+                console.error('can not get subject:', err);
+            }
+        };
+
+        fetchData();
+    }, [subject_id]);
+
+
+
 
     // ✅ Group data by level
-    const groupedByLevel = mockData.reduce((acc, item) => {
+    // const groupedByLevel = mockData.reduce((acc, item) => {
+    const groupedByLevel = sheet?.reduce((acc, item) => {
         if (!acc[item.level]) acc[item.level] = []; // ถ้ายังไม่มี key ของระดับชั้นนี้ ให้สร้าง array ว่าง
         acc[item.level].push(item); // ใส่ item เข้าไปใน array ของ level นั้น
         return acc; // คืนค่าผลสะสมไปยังรอบถัดไป
     }, {});
 
+    const dateFormat = (isoDate) => {
+        const date = new Date(isoDate);
+
+        // แปลงให้ได้วันที่เป็น วัน-เดือน-ปี
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() เริ่มที่ 0
+        const year = date.getFullYear();
+
+        const formattedDate = `${day}-${month}-${year}`;
+        // console.log(formattedDate); // ✅ "11-05-2025"
+        return formattedDate
+
+    }
+
     const renderSheetCard = (sheet) => (
         <div
-            key={sheet.sheed_id}
+            key={sheet.sheet_id}
             // onClick={() => router.push(`/sheetDetail/${sheet.sheed_id}`)}  // ✅ เปลี่ยนหน้า
-            onClick={() => router.push(`/sheetDetail`)}  // ✅ เปลี่ยนหน้า
+            onClick={() =>
+                router.push(`/sheetDetail?sheet_id=${sheet.sheet_id}`)
+            }  // ✅ เปลี่ยนหน้า
             className="sheet-card"
             style={{
                 backgroundColor: YELLOW_COLOR,
@@ -92,7 +135,7 @@ export default function Sheet() {
 
                 <div style={{ fontSize: "120%" }}>
                     <h1>
-                        {sheet.subject_code}
+                        {sheet.subject_code.toUpperCase() || "AA101"}
                     </h1>
                 </div>
 
@@ -103,10 +146,14 @@ export default function Sheet() {
                 }}>
 
                     <p>
-                        {sheet.name}
+                        {/* {sheet.name || "Sheet"} */}
+                        {sheet?.name || sheet?.title || "Sheet"}
                     </p>
                     <p>
-                        {sheet.date}
+                        {
+                            // sheet.create_date
+                            dateFormat(sheet.create_date)
+                        }
                     </p>
                 </div>
             </div>
@@ -177,41 +224,77 @@ export default function Sheet() {
                             scale: '1.5',
                         }}
                     >
-                        {'ภาษาไทย'}
+                        {subject_name}
                     </h1>
                 </div>
 
+                {Object.keys(groupedByLevel || {}).length > 0 ? (
+                    Object.keys(groupedByLevel).map((level) => (
+                        <div key={level} style={{ marginTop: "30px", paddingInline: "10%" }}>
+                            <h2 style={{ fontWeight: "bold", marginBottom: "10px" }}>
+                                {'ระดับชั้น'} {level}
+                            </h2>
 
-                {Object.keys(groupedByLevel).map((level) => (
+                            <div
+                                className="scroll-container"
+                                style={{
+                                    display: "flex",
+                                    flexDirection: 'row',
+                                    overflowX: "auto",
+                                    gap: "20px",
+                                    paddingBottom: "10px",
+                                }}
+                            >
+                                {groupedByLevel[level]?.length > 0 ? (
+                                    groupedByLevel[level].map(renderSheetCard)
+                                ) : (
+                                    <div style={{ padding: "20px", color: "gray", fontSize: "1.2rem" }}>
+                                        ไม่มีข้อมูลในระดับชั้นนี้
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ))
+                ) : (
 
-                    <div key={level}
+                    // <div style={{ textAlign: "center", marginTop: "40px", color: "gray" }}>
+                    //     ไม่มีข้อมูลชีทในรายวิชานี้
+                    // </div>
+                    <div
                         style={{
-                            marginTop: "30px",
-                            paddingInline: "10%",
-                            //   backgroundColor:'red'
+                            // backgroundColor: 'red',
+                            width: "100%",
+                            display: 'flex',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <div style={{
+                            alignItems: 'center'
                         }}>
-
-                        <h2 style={{ fontWeight: "bold", marginBottom: "10px" }}>
-                            {'ระดับชั้น'} {level}
-                        </h2>
-
-                        {/* ✅ Scrollable horizontal area */}
-                        <div
-                            className="scroll-container"
-
-                            style={{
-                                display: "flex",
-                                flexDirection: 'row',
-                                overflowX: "auto",
-                                gap: "20px",
-                                paddingBottom: "10px",
-
-                            }}
-                        >
-                            {groupedByLevel[level].map(renderSheetCard)}
+                            <div style={{
+                                // backgroundColor: 'green',
+                                opacity: "0.6",
+                                color: DARK_BLUE_COLOR,
+                                width: "100%",
+                                display: 'flex',
+                                justifyContent: 'center',
+                            }} >
+                                <IoLogoDropbox size="50%"
+                                    style={{
+                                        width: "50%"
+                                    }} />
+                            </div>
+                            <h1 style={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                opacity: "0.6",
+                                color: DARK_BLUE_COLOR,
+                            }}>ไม่มีข้อมูลชีทในรายวิชานี้</h1>
                         </div>
                     </div>
-                ))}
+                )}
+
+
 
             </Container>
 

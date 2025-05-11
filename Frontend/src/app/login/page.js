@@ -5,32 +5,37 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { API_IP } from "@/components/Constant";
 
 export default function LoginPage() {
     const route = useRouter();
 
     const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
 
 
     const onLogin = async () => {
-        if (!email || !password) {
-            alert('โปรดกรอกข้อมูลให้ชัดเจน')
+        if (!username || !password) {
+            alert('โปรดกรอกข้อมูลให้ครบถ้วน')
             return
         }
 
         let data = {
-            email,
+            username,
             password
         }
 
 
-        await axios.post(data)
-            .then(res => { console.log('>> ', res) })
+        await axios.post(API_IP + '/api/login/' ,data)
+            .then(res => { 
+                console.log('>> ', res)
+                localStorage.setItem('token', res.data.token)
+                route.push("/home")
+             })
             .catch(err => { console.log('err: ', err) })
 
-        // route.push("/home")
     }
 
     return (
@@ -48,13 +53,13 @@ export default function LoginPage() {
             {/* ขวา: ฟอร์ม login */}
             <div style={styles.formSection}>
                 <div style={styles.formBox}>
-                    <h2 style={styles.label}>Email</h2>
+                    <h2 style={styles.label}>Username</h2>
                     <input
-                        type="email"
+                        type="text"
                         style={styles.input}
                         placeholder=""
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
                     />
 
                     <h2 style={styles.label}>Password</h2>

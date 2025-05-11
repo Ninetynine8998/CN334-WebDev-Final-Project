@@ -1,9 +1,11 @@
 "use client";
 
-import { BLUE_COLOR, LIGHT_BLUE_COLOR, WHITE_COLOR } from "@/components/Constant";
+import { API_IP, BLUE_COLOR, LIGHT_BLUE_COLOR, WHITE_COLOR } from "@/components/Constant";
+import axios from "axios";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from 'react-toastify';
 
 
 import { useEffect, useState } from "react";
@@ -14,16 +16,54 @@ export default function Register() {
     const [email, setEmail] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [confrimPassword, setConfrimPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
 
-    const onRegister = () => {
-        if (!email || !username || !password || !confrimPassword) {
-            alert('asd')
+    const onRegister = async () => {
+        if (!email || !username || !password || !confirmPassword) {
+            // alert('asd')
             return
         }
 
+        const data = {
+            email,
+            username,
+            password,
+            confirm_password: confirmPassword,
+        }
+
+        // await axios.post(API_IP + '/api/register/', data)
+        //     .then(res => {
+        //         console.log(res)
+        //         toast.success("ลงทะเบียนสำเร็จ");
+
+        //     })
+        //     .catch(err => {
+        //         const message = err.response?.data?.username[0] || "เกิดข้อผิดพลาดโปรดเช็คข้อมูล";
+        //         toast.error(message);
+
+        //         console.log(err.response.data)
+        //     })
+        try {
+            const res = await axios.post(API_IP + '/api/register/', data);
+            toast.success("ลงทะเบียนสำเร็จ");
         route.push("/login")
+
+        } catch (err) {
+            const errors = err.response?.data;
+
+            // ✅ วนลูป key เช่น username, email, password
+            for (let field in errors) {
+                if (Array.isArray(errors[field])) {
+                    errors[field].forEach(msg => toast.error(`${field}: ${msg}`));
+                } else {
+                    toast.error(`${field}: ${errors[field]}`);
+                }
+            }
+        }
+
+
     }
+
 
     return (
         <div style={{
@@ -77,8 +117,8 @@ export default function Register() {
                         type="password"
                         style={styles.input}
                         placeholder=""
-                        value={confrimPassword}
-                        onChange={(e) => setConfrimPassword(e.target.value)}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
                     />
 
                     <button className="register-button" style={styles.button}

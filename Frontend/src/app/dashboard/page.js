@@ -3,10 +3,11 @@
 import { useRouter } from 'next/navigation';
 import Image from "next/image";
 import Container from "@/components/Container";
-import { BLUE_COLOR, DARK_BLUE_COLOR, LIGHT_BLUE_COLOR, WHITE_COLOR, YELLOW_COLOR } from "@/components/Constant";
+import { API_IP, BLUE_COLOR, DARK_BLUE_COLOR, LIGHT_BLUE_COLOR, RED_COLOR, WHITE_COLOR, YELLOW_COLOR } from "@/components/Constant";
 import { useEffect, useState } from 'react';
 import { MdDownloadForOffline } from "react-icons/md";
 import { IoLogoDropbox } from "react-icons/io";
+import axios from 'axios';
 
 const mockUser = {
     user_id: 1,
@@ -102,7 +103,7 @@ const mockSheet = [
 ]
 
 export default function Dashboard() {
-    const route = useRouter();
+    const router = useRouter();
 
     const [user, setUser] = useState(mockUser);
     const [sheet, setSheet] = useState(mockSheet);
@@ -113,6 +114,32 @@ export default function Dashboard() {
         item.subject_code.toLowerCase().includes(searchText.toLowerCase())
     );
 
+    const onLogout = async () => {
+        const token = localStorage.getItem('token');
+
+        const config = {
+            headers: {
+                'Authorization': `Token ${token}`,
+                'Content-Type': 'application/json'
+            }
+        };
+
+        await axios.post(API_IP + "/api/logout/", null, config)
+            .then(res => {
+                console.log(res.data);
+                localStorage.removeItem('token');
+                alert("ออกจากระบบเรียบร้อย");
+                router.push("/login");
+            })
+            .catch(err => {
+                console.error(err);
+                if (err.response.data.detail === 'Invalid token.' || err.response.data.detail === 'Token has expired.') {
+                    alert("เกิดข้อผิดพลาดบางอย่าง");
+                }
+                router.push('/login');
+            })
+
+    }
 
     const renderSheetCard = (sheet) => (
         <div
@@ -228,6 +255,25 @@ export default function Dashboard() {
                     </h1>
 
                     {/* ชื่อผู้ใช้ชิดขวา */}
+                    <button
+                        onClick={() => { onLogout() }}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            color: RED_COLOR,
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            width: "100%",
+                            height: "10%",
+
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            alignItems: 'flex-start',
+                            padding: '10px'
+                        }}
+                    >
+                        ออกจากระบบ
+                    </button>
                     <div style={{
                         display: 'flex',
                         justifyContent: 'flex-end',

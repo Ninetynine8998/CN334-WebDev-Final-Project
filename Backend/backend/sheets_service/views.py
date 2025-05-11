@@ -38,45 +38,13 @@ class RegisterView(generics.CreateAPIView):
         headers = self.get_success_headers(serializer.data)
         return Response({'status': 'success', 'message': 'User registered successfully'}, status=status.HTTP_201_CREATED, headers=headers)
 
-# class CustomAuthToken(ObtainAuthToken):
-#     # ไม่ต้องระบุ serializer_class ตรงๆ แล้วก็ได้ ให้มันใช้ค่าเริ่มต้นไป
-#     # serializer_class = AuthTokenSerializer
-
-#     def post(self, request, *args, **kwargs):
-#         # ใช้ standard serializer เพื่อตรวจสอบข้อมูลและยืนยันตัวตน
-#         # ถ้าสำเร็จ validated_data จะมี 'user' (และควรจะมี 'token' แต่ในเคสของคุณมันไม่มี)
-#         serializer = self.get_serializer(data=request.data)
-#         serializer.is_valid(raise_exception=True) # ถ้า Login ไม่สำเร็จ จะโยน exception
-
-#         # ตอนนี้เรารู้ว่า 'user' มีอยู่ใน validated_data แน่ๆ ถ้ามาถึงตรงนี้
-#         user = serializer.validated_data['user']
-
-#         # --- ทำการสร้างหรือดึง Token ด้วยตัวเองสำหรับผู้ใช้ที่ยืนยันตัวตนได้แล้ว ---
-#         # เรียกใช้ Token.objects.get_or_create
-#         token, created = Token.objects.get_or_create(user=user)
-#         # ----------------------------------------------------------------------
-
-#         # สร้าง Response ในรูปแบบที่ต้องการ โดยใช้ token ที่ได้มาจากการ get_or_create
-#         return Response({
-#             'token': token.key, # ใช้ token.key เพื่อเอาค่า string ของ Token
-#             'user_id': user.pk, # ใช้ user.pk เพื่อเอา User ID
-#             'email': user.email, # ใช้ user.email เพื่อเอา Email (สมมติว่า User model มี field email)
-#             'status': 'success',
-#             'message': 'Login successful'
-#         }, status=status.HTTP_200_OK)
-        
-
 class CustomAuthToken(ObtainAuthToken):
-    # serializer_class อาจตั้งค่าหรือไม่ก็ได้
-    # serializer_class = AuthTokenSerializer
-
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         user = serializer.validated_data['user']
 
-        # --- DEBUG CODE: ลบ Token เก่าทั้งหมดของผู้ใช้นี้ แล้วสร้างใหม่ ---
         print(f"DEBUG Login: Attempting to delete existing tokens for user {user.username}")
         try:
             # ใช้ Custom Token Model manager ของคุณในการลบ
@@ -90,7 +58,6 @@ class CustomAuthToken(ObtainAuthToken):
         token = ExpiringToken.objects.create(user=user)
         print(f"DEBUG Login: New token created for user {user.username}: {token.key}")
         # --- END DEBUG CODE ---
-
 
         # Return custom response format โดยใช้ Token ที่เพิ่งสร้าง
         return Response({

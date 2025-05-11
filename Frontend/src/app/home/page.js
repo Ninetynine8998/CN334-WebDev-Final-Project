@@ -6,7 +6,9 @@ import { redirect } from 'next/navigation'
 import Image from "next/image";
 import Container from "@/components/Container";
 
-import { YELLOW_COLOR, WHITE_COLOR } from "@/components/Constant";
+import { YELLOW_COLOR, WHITE_COLOR, API_IP } from "@/components/Constant";
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 const mockData = [
     {
@@ -44,6 +46,22 @@ const mockData = [
 ]
 
 export default function Home() {
+    const [allSubject, setAllSubject] = useState(null);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const res = await axios.get(API_IP + '/api/_all_subject/');
+                console.log('subject:', res.data);
+                setAllSubject(res.data.subjects); // ต้องตรงกับ key ที่ Django ส่งออก
+            } catch (err) {
+                console.error('can not get subject:', err);
+            }
+        };
+
+        fetchData();
+    }, []);
+
 
     const render_subject = (subject) => {
         return (

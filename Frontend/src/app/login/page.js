@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import axios from "axios";
 
 export default function LoginPage() {
     const route = useRouter();
@@ -11,13 +12,25 @@ export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    const onLogin = () => {
+
+
+    const onLogin = async () => {
         if (!email || !password) {
-            alert('asd')
+            alert('โปรดกรอกข้อมูลให้ชัดเจน')
             return
         }
 
-        route.push("/home")
+        let data = {
+            email,
+            password
+        }
+
+
+        await axios.post(data)
+            .then(res => { console.log('>> ', res) })
+            .catch(err => { console.log('err: ', err) })
+
+        // route.push("/home")
     }
 
     return (

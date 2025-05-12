@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.models import User # ใช้โมเดล User ที่มีในตัวของ Django
 from django.conf import settings # นำเข้า settings
 
+
 # นำเข้า AbstractBaseUser, BaseUserManager ถ้าจะสร้าง Custom User Model ทั้งหมด (ไม่ใช่เคสนี้)
 # from django.contrib.auth.models import User # User มาตรฐาน
 
@@ -37,6 +38,8 @@ class Subject(models.Model):
 
 class Sheet(models.Model):
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
+    # subject_id = models.IntegerField(null=True, blank=True) # หรือเป็น ForeignKey ถ้ามีการเชื่อมโยงกับ Model Subject
+
     name = models.CharField(max_length=200) # ตรงกับ name ใน ER
     # เพิ่มฟิลด์ที่ขาดไปตาม ER Diagram:
     subject_code = models.CharField(max_length=10, blank=True, null=True) # กำหนดให้ว่าง/null ได้ ถ้าข้อมูลเก่าไม่มี
@@ -60,8 +63,8 @@ class Cart(models.Model):
     # เพิ่มฟิลด์อื่นๆ ที่เกี่ยวข้อง (เช่น created_at)
 
     def __str__(self):
-        return f"Cart of {self.user.username}" # ตะกร้าของ user นี้
-
+        # ปรับการแสดงผลให้เหมาะสม อาจจะแสดง ID Cart หรือ user ที่เป็นเจ้าของ
+        return f"Cart {self.id}" # หรือ f"Cart of {self.user.username}" ถ้ามี user
 # class CartItem(models.Model):
 #     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
 #     sheet = models.ForeignKey(Sheet, on_delete=models.CASCADE)
@@ -76,10 +79,13 @@ class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
     sheet = models.ForeignKey(Sheet, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
+    create_date = models.DateTimeField(auto_now_add=True)
+    modify_date = models.DateTimeField(auto_now=True)
     # Add other relevant fields
 
     def __str__(self):
-        return f"{self.quantity} x {self.sheet.title} in {self.cart.user.username}'s cart"
+# ปรับ return ให้เหมาะสม อาจจะแสดงชื่อชีทและ cart id
+        return f"{self.sheet.name if self.sheet else 'N/A'} in Cart {self.cart.id if self.cart else 'N/A'}"
 
 # class Order(models.Model):
 #     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -91,15 +97,52 @@ class CartItem(models.Model):
 #         return f"Order by {self.user.username}" # ออเดอร์โดย user นี้
 
 class Order(models.Model):
+    # Django จะสร้างฟิลด์ id (Primary Key) ให้อัตโนมัติ
+
+    # ฟิลด์ User ที่เชื่อมโยง (มีอยู่แล้ว)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    tel = models.CharField(max_length=20)
-    email = models.EmailField()
-    # เพิ่มฟิลด์ created_at เข้าไปตรงนี้ครับ
-    created_at = models.DateTimeField(auto_now_add=True) # บันทึกเวลาสร้างออเดอร์อัตโนมัติ
-    # Add other relevant fields (e.g., total_amount, status)
+    tel = models.CharField(max_length=20, blank=True, null=True) # เพิ่ม blank=True, null=True ถ้าฟิลด์นี้ไม่จำเป็นต้องมีค่าเสมอ
+    email = models.EmailField(blank=True, null=True) # เพิ่ม blank=True, null=True ถ้าฟิลด์นี้ไม่จำเป็นต้องมีค่าเสมอ
+
+    # ฟิลด์วันที่สร้าง (มีอยู่แล้ว)
+    created_at = models.DateTimeField(auto_now_add=True)
+    # เพิ่มฟิลด์วันที่แก้ไข (ถ้ายังไม่มี)
+    modify_date = models.DateTimeField(auto_now=True)
+
+    # *** เพิ่มฟิลด์อื่นๆ ที่คุณต้องการแสดงผล (ถ้ายังไม่มี) ***
+    # ฟิลด์ Cart ที่เชื่อมโยง
+    # สมมติว่า Order เชื่อมโยงกับ Cart ใบเดียว
+    # คุณต้องปรับ on_delete และ related_name ตามความเหมาะสม
+    # cart = models.ForeignKey('sheet_service.Cart', on_delete=models.SET_NULL, null=True, blank=True, related_name='orders') # <--- ปรับแก้ 'your_app_name.Cart' และ related_name
+    cart = models.ForeignKey(Cart, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
+
+    # ฟิลด์สำหรับ Total Amount / Total Price
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0) # ใช้ชื่อฟิลด์ total_amount
+
+    # ฟิลด์สำหรับ สถานะของ Order
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Processing', 'Processing'),
+        ('Completed', 'Completed'),
+        ('Cancelled', 'Cancelled'),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+
+    # ฟิลด์สำหรับ จำนวนรายการทั้งหมดใน Order (อาจจะคำนวณจาก OrderItem หรือเก็บไว้ตรงนี้)
+    total_items = models.IntegerField(default=0)
+
+    # หมายเหตุ: ฟิลด์ sheet_id โดยทั่วไปจะอยู่ใน OrderItem Model ไม่ได้อยู่ใน Order Model โดยตรง
 
     def __str__(self):
-        return f"Order by {self.user.username} ({self.id})" # อาจเพิ่ม ID เข้าไปด้วย
+        # ปรับการแสดงผลให้เหมาะสม อาจจะแสดง ID Order และ User ที่เป็นเจ้าของ
+        return f"Order {self.id} by {self.user.username if self.user else 'N/A'}"
+
+    # อาจมีการตั้งค่า Meta class หรือ method อื่นๆ ตามที่คุณมี
+    # class Meta:
+    #     ordering = ['-created_at'] # ตัวอย่าง: เรียงลำดับตามวันที่สร้างล่าสุด
+
+
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)

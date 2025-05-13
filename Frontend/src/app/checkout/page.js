@@ -57,7 +57,7 @@ export default function Checkout() {
 
     const fetchCart = async () => {
         try {
-            const res = await axios.get(API_IP + `/api/my_cart/`, CONFIG);
+            const res = await axios.get(API_IP + `/api/my_cart/`, CONFIG());
             console.log('sheet:', res.data);
             setSheets(res.data.items);
             setTotalPrice(res.data.total_price);
@@ -100,14 +100,14 @@ export default function Checkout() {
             "cart_id": cartID
         }
 
-        await axios.post(API_IP + "/api/confirm_order/", data, CONFIG)
+        await axios.post(API_IP + "/api/confirm_order/", data, CONFIG())
             .then(res => {
                 console.log(res)
                 setOnPay(true);
             })
             .catch(err => {
                 console.log(err)
-            toast.success(err.message);
+            toast.error(err?.response?.data?.message);
 
             })
 

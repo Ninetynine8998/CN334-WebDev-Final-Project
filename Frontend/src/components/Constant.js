@@ -7,12 +7,15 @@ export const RED_COLOR = "#EE7E50";
 
 
 export const API_IP = 'http://127.0.0.1:8000';
-// export const API_IP = 'http://localhost:8000'; // ใช้เฉพาะตอนพัฒนาที่เครื่องเดียวกัน
 
 
-export const CONFIG = {
+export const CONFIG = () => {
+  if (typeof window === 'undefined') return {}; // ป้องกัน SSR
+  const token = localStorage.getItem('token');
+  return {
     headers: {
-        'Authorization': `Token ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
+      'Authorization': `Token ${token}`,
+      'Content-Type': 'application/json',
     }
+  };
 };

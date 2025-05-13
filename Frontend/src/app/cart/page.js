@@ -50,8 +50,16 @@ export default function Cart() {
     }, []);
 
     const fetchCart = async () => {
+        const token = localStorage.getItem('token');
+        const config = {
+            headers: {
+                'Authorization': `Token ${token}`,
+                'Content-Type': 'application/json',
+            }
+        }
+
         try {
-            const res = await axios.get(API_IP + `/api/my_cart/`,CONFIG);
+            const res = await axios.get(API_IP + `/api/my_cart/`, config);
             console.log('sheet:', res.data);
             setSheets(res.data.items);
             setTotalPrice(res.data.total_price)
@@ -61,20 +69,32 @@ export default function Cart() {
     };
 
     const handleRemove = async (id) => {
+        const token = localStorage.getItem('token');
+        const config = {
+            headers: {
+                'Authorization': `Token ${token}`,
+                'Content-Type': 'application/json',
+            }
+        }
 
         let data = {
             sheet_id: id
         }
 
         await axios.delete(API_IP + '/api/delete_item/', {
-            data,
-            ...CONFIG,
+            ...config,
+            data: {
+                sheet_id: id
+            }
         })
             .then(res => {
                 console.log(res)
                 fetchCart();
             })
-            .catch(err => console.log(err));
+            .catch(err =>
+                // err.status
+                console.log(err)
+            );
 
     };
 

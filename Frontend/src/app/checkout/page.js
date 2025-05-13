@@ -3,8 +3,10 @@
 import { useRouter } from 'next/navigation';
 import Image from "next/image";
 import Container from "@/components/Container";
-import { LIGHT_BLUE_COLOR } from "@/components/Constant";
+import { API_IP, CONFIG, LIGHT_BLUE_COLOR } from "@/components/Constant";
 import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const mockData = [
     {
@@ -25,21 +27,45 @@ const mockData = [
     },
 ];
 
+const initData = [
+    {
+        sheet_id: 0,
+        name: 'ไม่มีชื่อ',
+        subject_code: "AA111",
+        level: "มัธยมปลาย",
+        price: 0,
+        image: 'sheet1.svg',
+    },
+];
+
 export default function Checkout() {
     const route = useRouter();
     const [onPay, setOnPay] = useState(false);
-    const [sheets, setSheets] = useState(mockData);
     const [phone, setPhone] = useState('');
     const [email, setEmail] = useState('');
-    const [totalPrice, setTotalPrice] = useState(0);
     const [countdown, setCountdown] = useState(120);
     const [error, setError] = useState('');
 
 
+    const [sheets, setSheets] = useState(initData);
+    const [totalPrice, setTotalPrice] = useState(0);
+    const [cartID, setCartID] = useState(0);
+
     useEffect(() => {
-        const total = sheets.reduce((sum, item) => sum + item.price, 0);
-        setTotalPrice(total);
-    }, [sheets]);
+        fetchCart();
+    }, []);
+
+    const fetchCart = async () => {
+        try {
+            const res = await axios.get(API_IP + `/api/my_cart/`, CONFIG);
+            console.log('sheet:', res.data);
+            setSheets(res.data.items);
+            setTotalPrice(res.data.total_price);
+            setCartID(res.data.cart_id);
+        } catch (err) {
+            console.error('can not get subject:', err);
+        }
+    };
 
     // นับถอยหลัง
     useEffect(() => {
@@ -49,40 +75,67 @@ export default function Checkout() {
         }
 
         if (countdown == 0) {
-            finishProcess();
+            // finishProcess();
+            toast.error(`order cancelled`);
         }
 
         return () => clearTimeout(timer);
     }, [onPay, countdown]);
 
     const finishProcess = () => {
+        toast.success("จ่ายเงินสำเร็จ");
         route.push("/dashboard");
     }
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!/^\d{10}$/.test(phone)) {
             setError("กรุณากรอกเบอร์โทร 10 หลักให้ถูกต้อง");
             return;
         }
         setError('');
-        setOnPay(true);
+
+        let data = {
+            "tel": phone,
+            "email": email,
+            "cart_id": cartID
+        }
+
+        await axios.post(API_IP + "/api/confirm_order/", data, CONFIG)
+            .then(res => {
+                console.log(res)
+                setOnPay(true);
+            })
+            .catch(err => {
+                console.log(err)
+            toast.success(err.message);
+
+            })
+
     };
 
-    const render_order = (order) => (
-        <div key={order.sheet_id} style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-            <Image
-                src={`/${order.image}`}
-                alt="sheet"
-                width={80}
-                height={80}
-                style={{ objectFit: 'cover', borderRadius: '8px' }}
-            />
-            <div>
-                <p style={{ margin: 0, fontWeight: 'bold' }}>{order.name}</p>
-                <p style={{ margin: 0 }}>{order.price} บาท</p>
+    const render_order = (order) => {
+        const sheet = order.sheet
+        console.log("order: ", sheet)
+        return (
+            // <div key={order.sheet_id} style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+            <div key={sheet?.sheet_id || initData[0].sheet_id} style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                <Image
+                    // src={`/${order.image}`}
+                    src={`/${sheet?.image || initData[0].image}`}
+                    alt="sheet"
+                    width={80}
+                    height={80}
+                    style={{ objectFit: 'cover', borderRadius: '8px' }}
+                />
+                <div>
+                    {/* <p style={{ margin: 0, fontWeight: 'bold' }}>{order.name}</p> */}
+                    <p style={{ margin: 0, fontWeight: 'bold' }}>{sheet?.name || initData[0].name}</p>
+                    {/* <p style={{ margin: 0 }}>{order.price} บาท</p> */}
+                    <p style={{ margin: 0 }}>{sheet?.price || initData[0].price} บาท</p>
+                </div>
             </div>
-        </div>
-    );
+        )
+    };
 
     return (
         <div>

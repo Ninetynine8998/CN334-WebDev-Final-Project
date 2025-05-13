@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import Image from "next/image";
 import Container from "@/components/Container";
-import { API_IP, BLUE_COLOR, DARK_BLUE_COLOR, LIGHT_BLUE_COLOR, RED_COLOR, WHITE_COLOR, YELLOW_COLOR } from "@/components/Constant";
+import { API_IP, BLUE_COLOR, CONFIG, DARK_BLUE_COLOR, LIGHT_BLUE_COLOR, RED_COLOR, WHITE_COLOR, YELLOW_COLOR } from "@/components/Constant";
 import { useEffect, useState } from 'react';
 import { MdDownloadForOffline } from "react-icons/md";
 import { IoLogoDropbox } from "react-icons/io";
@@ -30,89 +30,58 @@ const mockSheet = [
         image: 'sheet1.svg',
         pdf: 'test_sheet.pdf',
     },
+]
+
+const initSheet = [
     {
-        sheet_id: 3,
-        name: 'อ่านอย่างไรให้เข้าใจ',
-        subject_code: "TH112",
+        sheet_id: 0,
+        name: 'ไม่ม่ชื่อ',
+        subject_code: "aa111",
         image: 'sheet1.svg',
         pdf: 'test_sheet.pdf',
     },
-    {
-        sheet_id: 4,
-        name: 'เขียนกันเถอะ',
-        subject_code: "CN101",
-        image: 'sheet1.svg',
-        pdf: 'test_sheet.pdf',
-    },
-    {
-        sheet_id: 5,
-        name: 'อ่านอย่างไรให้เข้าใจ',
-        subject_code: "TH112",
-        image: 'sheet1.svg',
-        pdf: 'test_sheet.pdf',
-    },
-    {
-        sheet_id: 6,
-        name: 'เขียนกันเถอะ',
-        subject_code: "CN101",
-        image: 'sheet1.svg',
-        pdf: 'test_sheet.pdf',
-    },
-    {
-        sheet_id: 7,
-        name: 'เขียนกันเถอะ',
-        subject_code: "CN101",
-        image: 'sheet1.svg',
-        pdf: 'test_sheet.pdf',
-    },
-    {
-        sheet_id: 8,
-        name: 'อ่านอย่างไรให้เข้าใจ',
-        subject_code: "TH112",
-        image: 'sheet1.svg',
-        pdf: 'test_sheet.pdf',
-    },
-    {
-        sheet_id: 9,
-        name: 'เขียนกันเถอะ',
-        subject_code: "CN101",
-        image: 'sheet1.svg',
-        pdf: 'test_sheet.pdf',
-    },
-    {
-        sheet_id: 10,
-        name: 'เขียนกันเถอะ',
-        subject_code: "CN101",
-        image: 'sheet1.svg',
-        pdf: 'test_sheet.pdf',
-    },
-    {
-        sheet_id: 11,
-        name: 'อ่านอย่างไรให้เข้าใจ',
-        subject_code: "TH112",
-        image: 'sheet1.svg',
-        pdf: 'test_sheet.pdf',
-    },
-    {
-        sheet_id: 12,
-        name: 'เขียนกันเถอะ',
-        subject_code: "CN101",
-        image: 'sheet1.svg',
-        pdf: 'test_sheet.pdf',
-    },
+
 ]
 
 export default function Dashboard() {
     const router = useRouter();
 
     const [user, setUser] = useState(mockUser);
-    const [sheet, setSheet] = useState(mockSheet);
+    const [sheet, setSheet] = useState(initSheet);
     const [searchText, setSearchText] = useState('');
 
     const filteredSheets = sheet.filter((item) =>
         item.name.toLowerCase().includes(searchText.toLowerCase()) ||
         item.subject_code.toLowerCase().includes(searchText.toLowerCase())
     );
+
+
+    const [sheets, setSheets] = useState(initSheet);
+
+
+    useEffect(() => {
+        fetchCart();
+    }, []);
+
+    const fetchCart = async () => {
+        if (typeof window === "undefined") return; // แก้สำหรับ SSR
+
+        const token = localStorage.getItem('token');
+        const config = {
+            headers: {
+                'Authorization': `Token ${token}`,
+                'Content-Type': 'application/json',
+            }
+        }
+
+        try {
+            const res = await axios.post(API_IP + `/api/dashboard/`,null, config);
+            console.log('sheet:', res.data);
+            setSheet(res.data.sheets); // <- ระวังชื่อ key ต้องตรงกับ API
+        } catch (err) {
+            console.error('can not get sheet:', err);
+        }
+    };
 
     const onLogout = async () => {
         const token = localStorage.getItem('token');
@@ -143,7 +112,7 @@ export default function Dashboard() {
 
     const renderSheetCard = (sheet) => (
         <div
-            key={sheet.sheet_id}
+            key={sheet.sheet_id || initSheet[0].sheet_id}
             className="sheet-card"
             style={{
                 backgroundColor: YELLOW_COLOR,
@@ -158,7 +127,7 @@ export default function Dashboard() {
             <div className="contend">
                 <div>
                     <Image
-                        src={`/${sheet.image}`}
+                        src={`/${sheet.image || initSheet[0].image}`}
                         alt="sheet"
                         width={200}
                         height={200}
@@ -179,8 +148,8 @@ export default function Dashboard() {
                     display: 'grid',
                     gap: '10px'
                 }}>
-                    <h4 style={{}}>{sheet.subject_code}</h4>
-                    <p style={{}}>{sheet.name}</p>
+                    <h4 style={{}}>{sheet.subject_code || initSheet[0].subject_code}</h4>
+                    <p style={{}}>{sheet.name||initSheet[0].name}</p>
                 </div>
             </div>
 
@@ -188,7 +157,7 @@ export default function Dashboard() {
             {/* ✅ ปุ่มดาวน์โหลด (ลอย) */}
             <div className="download-button">
                 <a
-                    href={`/pdfs/${sheet.pdf}`}
+                    href={`/pdfs/${sheet.pdf||initSheet[0].pdf}`}
                     download
                     target="_blank"
                 >
@@ -255,6 +224,14 @@ export default function Dashboard() {
                     </h1>
 
                     {/* ชื่อผู้ใช้ชิดขวา */}
+                    <div style={{
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            alignItems: 'flex-end',
+                            width: '100%',
+                            // backgroundColor:'green'
+                        }}>
+                        
                     <button
                         onClick={() => { onLogout() }}
                         style={{
@@ -263,17 +240,19 @@ export default function Dashboard() {
                             color: RED_COLOR,
                             fontWeight: 'bold',
                             cursor: 'pointer',
-                            width: "100%",
+                            // width: "100%",
                             height: "10%",
 
                             display: 'flex',
                             justifyContent: 'flex-end',
                             alignItems: 'flex-start',
-                            padding: '10px'
+                            padding: '10px',
+                            // backgroundColor:'red'
                         }}
-                    >
+                        >
                         ออกจากระบบ
                     </button>
+                        </div>
                     <div style={{
                         display: 'flex',
                         justifyContent: 'flex-end',
@@ -308,9 +287,8 @@ export default function Dashboard() {
                         display: "flex",
                         gap: "20px",
                         flexWrap: "wrap",
-                        justifyContent: 'space-evenly',
-                        // backgroundColor: 'red',
-
+                        // justifyContent: 'space-evenly',
+                        justifyContent: 'space-around',
                     }}>
                         {filteredSheets.length !== 0 ? (
                             filteredSheets.map(renderSheetCard)

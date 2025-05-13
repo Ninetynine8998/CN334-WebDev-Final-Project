@@ -6,19 +6,6 @@ from django.contrib.auth.admin import UserAdmin
 from django.utils.html import format_html # อาจต้องใช้ถ้าจะแสดงผลเป็นรูปภาพ
 from .models import Subject, Sheet, Cart, CartItem, Order, OrderItem, ExpiringToken
 from rest_framework.authtoken.models import Token as DefaultToken # นำเข้า Token มาตรฐานเพื่อลงทะเบียนด้วย ถ้าจำเป็น
-# # ลงทะเบียน Models ใน Admin Site
-# admin.site.register(Subject)
-# admin.site.register(Sheet)
-# admin.site.register(Cart) # <-- เพิ่มบรรทัดนี้เพื่อลงทะเบียน Model Cart
-
-# # คุณสามารถลงทะเบียน Model อื่นๆ ที่คุณต้องการจัดการผ่าน Admin ได้เช่นกัน
-# # admin.site.register(Cart)
-# # admin.site.register(CartItem)
-# # admin.site.register(Order)
-# # admin.site.register(OrderItem)
-
-# sheets_service/admin.py
-
 
 # --- Inline Models (สำหรับแสดงรายการย่อยในหน้าหลัก) ---
 

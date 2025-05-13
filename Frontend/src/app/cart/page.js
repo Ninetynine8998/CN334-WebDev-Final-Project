@@ -5,8 +5,10 @@
 import { useRouter } from 'next/navigation';
 import Image from "next/image";
 import Container from "@/components/Container";
-import { LIGHT_BLUE_COLOR, RED_COLOR } from "@/components/Constant";
+import { API_IP, CONFIG, DARK_BLUE_COLOR, LIGHT_BLUE_COLOR, RED_COLOR } from "@/components/Constant";
 import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { IoLogoDropbox } from 'react-icons/io';
 
 const mockData = [
     {
@@ -26,91 +28,142 @@ const mockData = [
         image: 'sheet1.svg',
     },
 ];
+const initData = [
+    {
+        sheet_id: 0,
+        name: '',
+        subject_code: "",
+        level: "",
+        price: 0,
+        image: 'sheet1.svg',
+    },
+];
 
 export default function Cart() {
     const router = useRouter();
-    const [sheets, setSheets] = useState(mockData);
+    const [sheets, setSheets] = useState(initData);
     const [totalPrice, setTotalPrice] = useState(0);
 
-    useEffect(() => {
-        const total = sheets.reduce((sum, item) => sum + item.price, 0);
-        setTotalPrice(total);
-    }, [sheets]);
 
-    const handleRemove = (id) => {
-        const filtered = sheets.filter((item) => item.sheet_id !== id);
-        setSheets(filtered);
+    useEffect(() => {
+        fetchCart();
+    }, []);
+
+    const fetchCart = async () => {
+        try {
+            const res = await axios.get(API_IP + `/api/my_cart/`,CONFIG);
+            console.log('sheet:', res.data);
+            setSheets(res.data.items);
+            setTotalPrice(res.data.total_price)
+        } catch (err) {
+            console.error('can not get subject:', err);
+        }
     };
 
-    const render_orderList = (order) => (
-        <div key={order.sheet_id} style={{
-            display: 'flex',
-            gap: '15px',
-            alignItems: 'center'
-        }}>
-            <div>
-                <Image
-                    src={`/${order.image}`}
-                    alt="sheet"
-                    width={200}
-                    height={200}
-                    style={{
-                        objectFit: 'cover',
-                        borderRadius: '8px',
-                    }}
-                />
-            </div>
+    const handleRemove = async (id) => {
 
-            <div style={{
-                height: '100%',
-                width: '90%',
+        let data = {
+            sheet_id: id
+        }
 
+        await axios.delete(API_IP + '/api/delete_item/', {
+            data,
+            ...CONFIG,
+        })
+            .then(res => {
+                console.log(res)
+                fetchCart();
+            })
+            .catch(err => console.log(err));
+
+    };
+
+    const render_orderList = (order) => {
+        const sheetItem = order.sheet
+        console.log("data: ", sheetItem)
+        if (!sheetItem) return;
+        return (
+            // <div key={order.sheet_id} style={{
+            <div key={sheetItem.sheet_id} style={{
                 display: 'flex',
-                flexDirection: 'column',
-                gap: '5%',
-                padding: '5px',
+                gap: '15px',
+                alignItems: 'center'
             }}>
-                <h3>{order.name}</h3>
-                <p>ระดับชั้น {order.level}</p>
-            </div>
 
+                <div>
+                    <Image
+                        // src={`/${order.image}`}
+                        src={`/${sheetItem?.image || 'sheet1.svg'}`}
+                        alt="sheet"
+                        width={200}
+                        height={200}
+                        style={{
+                            objectFit: 'cover',
+                            borderRadius: '8px',
+                        }}
+                    />
+                </div>
 
-            <div style={{
-                height: '100%',
-                width: '10%',
-            }}>
-                <button
-                    onClick={() => handleRemove(order.sheet_id)}
-                    style={{
-                        background: 'none',
-                        border: 'none',
-                        color: RED_COLOR,
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        width: "100%",
-                        height: "10%",
-
-                        display: 'flex',
-                        justifyContent: 'flex-end',
-                        alignItems: 'flex-start',
-                    }}
-                >
-                    นำออก
-                </button>
-                <p style={{
-                    fontWeight: 'bold',
-                    fontSize: '150%',
-                    height: '90%',
+                <div style={{
+                    height: '100%',
+                    width: '90%',
 
                     display: 'flex',
-                    justifyContent: 'flex-end',
-                    alignItems: 'flex-end',
+                    flexDirection: 'column',
+                    gap: '5%',
+                    padding: '5px',
                 }}>
-                    {order.price} บาท
-                </p>
+                    {/* <h3>{order.name}</h3> */}
+                    <h3>{sheetItem?.name}</h3>
+                    {/* <p>ระดับชั้น {order.level}</p> */}
+                    <p>ระดับชั้น {sheetItem?.level}</p>
+                </div>
+
+
+                <div style={{
+                    height: '100%',
+                    width: '10%',
+                }}>
+                    <button
+                        // onClick={() => handleRemove(order.sheet_id)}
+                        onClick={() => handleRemove(sheetItem?.sheet_id)}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            color: RED_COLOR,
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            width: "100%",
+                            height: "10%",
+
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            alignItems: 'flex-start',
+                        }}
+                    >
+                        นำออก
+                    </button>
+                    <p style={{
+                        fontWeight: 'bold',
+                        fontSize: '150%',
+                        height: '90%',
+
+                        display: 'flex',
+                        textAlign: 'right',
+                        justifyContent: 'flex-end',
+                        alignItems: 'flex-end',
+                        width: '100%',
+
+                    }}>
+                        {sheetItem?.price} บาท
+                        {/* {order.price} บาท */}
+                    </p>
+                </div>
             </div>
-        </div>
-    );
+        )
+    };
+
+
 
     return (
         <div>
@@ -153,49 +206,83 @@ export default function Cart() {
                     </h1>
                 </div>
 
-                <div style={{
-                    paddingInline: "10%",
-                    marginTop: "5%",
-                }}>
-
-                    <div style={{ display: 'grid', rowGap: '20px' }}>
-                        {sheets.map(render_orderList)}
-                    </div>
-
+                {sheets.length !== 0 ?
                     <div style={{
-                        width: "100%",
-                        display: 'flex',
-                        justifyContent: 'flex-end'
+                        paddingInline: "10%",
+                        marginTop: "5%",
                     }}>
+
+                        <div style={{ display: 'grid', rowGap: '20px' }}>
+                            {sheets.map(render_orderList)}
+                        </div>
+
                         <div style={{
-                            marginTop: '10%',
+                            width: "100%",
                             display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'flex-end',
-                            textAlign: 'end',
-                            gap: '20px',
-                            width: '30%',
+                            justifyContent: 'flex-end'
                         }}>
-                            <p style={{ fontSize: "150%" }}>รวม {totalPrice} บาท</p>
-                            <button
-                                onClick={() => router.push(`/checkout`)}
-                                style={{
-                                    backgroundColor: LIGHT_BLUE_COLOR,
-                                    padding: "10px 20px",
-                                    borderRadius: "5px",
-                                    border: "none",
-                                    color: "white",
-                                    fontWeight: "bold",
-                                    fontSize: '1rem',
-                                    cursor: "pointer",
-                                }}
-                            >
-                                สั่งซื้อ
-                            </button>
+                            <div style={{
+                                marginTop: '10%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'flex-end',
+                                textAlign: 'end',
+                                gap: '20px',
+                                width: '30%',
+                            }}>
+                                <p style={{ fontSize: "150%" }}>รวม {totalPrice} บาท</p>
+                                <button
+                                    onClick={() => router.push(`/checkout`)}
+                                    style={{
+                                        backgroundColor: LIGHT_BLUE_COLOR,
+                                        padding: "10px 20px",
+                                        borderRadius: "5px",
+                                        border: "none",
+                                        color: "white",
+                                        fontWeight: "bold",
+                                        fontSize: '1rem',
+                                        cursor: "pointer",
+                                    }}
+                                >
+                                    สั่งซื้อ
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
+                    : <div
+                        style={{
+                            // backgroundColor: 'red',
+                            width: "100%",
+                            display: 'flex',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <div style={{
+                            alignItems: 'center'
+                        }}>
+                            <div style={{
+                                // backgroundColor: 'green',
+                                opacity: "0.6",
+                                color: DARK_BLUE_COLOR,
+                                width: "100%",
+                                display: 'flex',
+                                justifyContent: 'center',
+                            }} >
 
+                                <IoLogoDropbox size="50%"
+                                    style={{
+                                        width: "50%"
+                                    }} />
+                            </div>
+                            <h1 style={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                opacity: "0.6",
+                                color: DARK_BLUE_COLOR,
+                            }}>ตะกร้ายังว่างอยู่</h1>
+                        </div>
+                    </div>
+                }
             </Container>
         </div>
     );

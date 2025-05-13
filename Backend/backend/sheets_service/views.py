@@ -20,6 +20,9 @@ from .models import Subject, Sheet, Cart, CartItem, Order, OrderItem,ExpiringTok
 from rest_framework.authtoken.views import ObtainAuthToken
 
 
+
+
+
 # --- Views สำหรับการยืนยันตัวตน (Authentication) ---
 
 class RegisterView(generics.CreateAPIView):
@@ -65,10 +68,40 @@ class CustomAuthToken(ObtainAuthToken):
             'message': 'Login successful'
         }, status=status.HTTP_200_OK)
         
+# เพิ่ม View สำหรับ Logout
+# class LogoutView(APIView):
+#     # กำหนดให้ต้องล็อกอิน (ส่ง Token ที่ถูกต้องและยังไม่หมดอายุ) ก่อนถึงจะ Logout ได้
+#     permission_classes = (IsAuthenticated,)
+
+#     def post(self, request, *args, **kwargs):
+#         # request.user คือผู้ใช้ที่ล็อกอินอยู่ (ได้มาจาก Token ที่ส่งมา)
+#         # request.user.auth_token คือ Token object ที่เชื่อมกับผู้ใช้คนนี้
+#         # เนื่องจากเราใช้ Custom Token Model ที่สืบทอดจาก Token มาตรฐาน
+#         # และตั้งค่า AUTH_TOKEN_MODEL ใน settings
+#         # request.user.auth_token จะอ้างถึง object ของ Custom Token Model ของเรา
+#         try:
+#             # ลบ Token ที่เชื่อมกับผู้ใช้ที่ล็อกอินอยู่ออกจากฐานข้อมูล
+#             # ใช้ request.user.auth_token.delete() หรือ Token.objects.get(user=request.user).delete()
+#             request.user.auth_token.delete()
+#             # หรือถ้าใช้ Custom Token Model ชื่อ ExpiringToken
+#             # ExpiringToken.objects.get(user=request.user).delete()
+#         except (Token.DoesNotExist, ExpiringToken.DoesNotExist):
+#             # ถ้า Token หายไปแล้ว (อาจล็อกเอาท์ไปแล้ว หรือลบจากฐานข้อมูล)
+#             pass # ไม่ต้องทำอะไรต่อ
+
+#         # คืนค่า response ว่า Logout สำเร็จ
+#         return Response({"status": "success", "message": "Successfully logged out."}, status=status.HTTP_200_OK)
+
 class LogoutView(APIView):
     permission_classes = (IsAuthenticated,) # ต้องล็อกอินก่อนถึงจะ Logout ได้
 
     def post(self, request, *args, **kwargs):
+        # request.user คือผู้ใช้ที่ล็อกอินอยู่ (ได้จากการตรวจสอบ Token)
+        # request.user.auth_token คือ Token object ที่เชื่อมกับผู้ใช้คนนี้
+        # โดยปกติ Django จะสร้าง attribute auth_token บน User object
+        # ถ้าใช้ Custom Token Model ที่ OneToOneField ชี้ไปที่ Standard Token
+        # และตั้ง AUTH_TOKEN_MODEL ใน settings
+        # request.user.auth_token จะอ้างถึง Standard Token Object
 
         try:
             # --- เพิ่มโค้ดสำหรับลบ Token ตรงนี้ ---
@@ -176,6 +209,30 @@ class AddToCartView(APIView):
         # ส่ง status และ message ตาม spec
         return Response({'status': 'success', 'message': 'Item added to cart'}, status=status.HTTP_200_OK)
 
+# class GetOrderView(generics.RetrieveAPIView): # เปลี่ยนชื่อจาก GetOrderView เพื่อสะท้อนว่าเป็นมุมมองสำหรับตะกร้า
+#     serializer_class = CartSerializer
+#     permission_classes = (IsAuthenticated,) # ต้องล็อกอินก่อนถึงจะดูตะกร้าได้
+#     lookup_field = 'pk' # ใช้ pk สำหรับ cart_id ตาม spec
+
+#     def get_queryset(self):
+#         # ดึงเฉพาะ Cart ของผู้ใช้ที่ล็อกอินอยู่
+#         return Cart.objects.filter(user=self.request.user)
+
+#     def retrieve(self, request, *args, **kwargs):
+#         # ดึง Cart object ตาม pk (cart_id) ที่ส่งมา และต้องเป็นของ user ที่ล็อกอินอยู่
+#         cart_id = self.kwargs.get(self.lookup_field)
+#         if cart_id:
+#              cart = get_object_or_404(Cart, id=cart_id, user=request.user)
+#         else:
+#              # ถ้าไม่มี cart_id ใน URL (อาจจะต้องการดูตะกร้าปัจจุบันของผู้ใช้)
+#              # ดึงหรือสร้างตะกร้าของผู้ใช้
+#              cart, created = Cart.objects.get_or_create(user=request.user)
+
+#         serializer = self.get_serializer(cart)
+#         # คืนค่ารายการสินค้าในตะกร้า (items) ตาม spec ที่บอกว่า response เป็น sheet: object array
+#         # Note: Spec response 'sheet': object array อาจจะสื่อถึงรายการของ CartItem objects
+#         # ในที่นี้จะคืนค่า items ซึ่งเป็น array ของ CartItemSerialized data
+#         return Response({'sheet': serializer.data['items']})
 
 class GetOrderView(generics.RetrieveAPIView):
     serializer_class = CartSerializer # ใช้ CartSerializer
@@ -221,6 +278,47 @@ class DeleteItemView(APIView):
 
         # ส่ง status และ message ตาม spec
         return Response({'status': 'success', 'message': 'Item removed from cart'}, status=status.HTTP_200_OK)
+
+
+# --- Views สำหรับออเดอร์ (Order) ---
+
+# class ConfirmOrderView(APIView):
+#     permission_classes = (IsAuthenticated,) # ต้องล็อกอินก่อนถึงจะยืนยันออเดอร์ได้
+
+#     def post(self, request, *args, **kwargs):
+#         # ดึงข้อมูล tel, email, cart_id จาก body ของ request
+#         tel = request.data.get('tel')
+#         email = request.data.get('email')
+#         cart_id = request.data.get('cart_id') # สมมติว่าส่ง cart_id มาด้วย
+
+#         # ตรวจสอบว่าข้อมูลที่จำเป็นครบถ้วนหรือไม่
+#         if not all([tel, email, cart_id]):
+#              return Response({'status': 'error', 'message': 'tel, email, and cart_id are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+#         # ดึงตะกร้าที่ต้องการยืนยัน และต้องเป็นของผู้ใช้ที่ล็อกอินอยู่
+#         cart = get_object_or_404(Cart, id=cart_id, user=request.user)
+#         cart_items = cart.cartitem_set.all() # ดึงรายการสินค้าในตะกร้านั้นทั้งหมด
+
+#         # ตรวจสอบว่าตะกร้ามีสินค้าหรือไม่
+#         if not cart_items:
+#              return Response({'status': 'error', 'message': 'Cart is empty'}, status=status.HTTP_400_BAD_REQUEST)
+
+#         # สร้าง Order ใหม่
+#         order = Order.objects.create(user=request.user, tel=tel, email=email)
+
+#         # คัดลอกรายการสินค้าจากตะกร้ามาเป็นรายการสินค้าในออเดอร์
+#         for item in cart_items:
+#              OrderItem.objects.create(
+#                 order=order,
+#                 sheet=item.sheet,
+#                 quantity=item.quantity,
+#                 price=item.sheet.price # บันทึกราคา ณ เวลาที่สั่งซื้อ
+#              )
+
+#         cart_items.delete() # ล้างรายการสินค้าในตะกร้าหลังจากสร้างออเดอร์แล้ว
+
+#         # ส่ง status และ message ตาม spec
+#         return Response({'status': 'success', 'message': 'Order confirmed'}, status=status.HTTP_201_CREATED)
 
 class ConfirmOrderView(APIView):
     permission_classes = (IsAuthenticated,)
@@ -289,6 +387,31 @@ class DashboardView(APIView):
         # จะคืนค่า serialized sheet objects แทน คุณสามารถปรับเปลี่ยนได้ตามต้องการ
         return Response({'sheets': serializer.data}) # เปลี่ยนเป็น 'sheets' เพื่อให้สื่อว่าเป็นรายการ
     
+    
+    
+# # เพิ่ม View สำหรับ Logout
+# class LogoutView(APIView):
+#     # กำหนดให้ต้องล็อกอิน (ส่ง Token ที่ถูกต้องและยังไม่หมดอายุ) ก่อนถึงจะ Logout ได้
+#     permission_classes = (IsAuthenticated,)
+
+#     def post(self, request, *args, **kwargs):
+#         # request.user คือผู้ใช้ที่ล็อกอินอยู่ (ได้มาจาก Token ที่ส่งมา)
+#         # request.user.auth_token คือ Token object ที่เชื่อมกับผู้ใช้คนนี้
+#         # เนื่องจากเราใช้ Custom Token Model ที่สืบทอดจาก Token มาตรฐาน
+#         # และตั้งค่า AUTH_TOKEN_MODEL ใน settings
+#         # request.user.auth_token จะอ้างถึง object ของ Custom Token Model ของเรา
+#         try:
+#             # ลบ Token ที่เชื่อมกับผู้ใช้ที่ล็อกอินอยู่ออกจากฐานข้อมูล
+#             # ใช้ request.user.auth_token.delete() หรือ Token.objects.get(user=request.user).delete()
+#             request.user.auth_token.delete()
+#             # หรือถ้าใช้ Custom Token Model ชื่อ ExpiringToken
+#             # ExpiringToken.objects.get(user=request.user).delete()
+#         except (Token.DoesNotExist, ExpiringToken.DoesNotExist):
+#             # ถ้า Token หายไปแล้ว (อาจล็อกเอาท์ไปแล้ว หรือลบจากฐานข้อมูล)
+#             pass # ไม่ต้องทำอะไรต่อ
+
+#         # คืนค่า response ว่า Logout สำเร็จ
+#         return Response({"status": "success", "message": "Successfully logged out."}, status=status.HTTP_200_OK)
 class OrderDetailView(generics.RetrieveAPIView):
     # กำหนด Queryset หลัก: ดึง Order ทั้งหมด
     queryset = Order.objects.all()

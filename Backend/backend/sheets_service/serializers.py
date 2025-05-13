@@ -81,7 +81,10 @@ class CartSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Cart
-        fields = ('cart_id', 'user', 'items', 'modify_date', 'create_date')        
+        fields = ('cart_id', 'user', 'items', 'modify_date', 'create_date', 'total_price')
+    
+    def get_total_price(self, obj):
+        return float(obj.total_price)   
 # class OrderItemSerializer(serializers.ModelSerializer):
 #      sheet = SheetSerializer(read_only=True) # แสดงรายละเอียด Sheet แบบอ่านอย่างเดียว
 
@@ -97,6 +100,13 @@ class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
          model = OrderItem
          fields = ('order_item_id', 'order', 'sheet', 'quantity', 'price') 
+
+# class OrderSerializer(serializers.ModelSerializer):
+#     items = OrderItemSerializer(many=True, read_only=True) # แสดงรายการสินค้าในออเดอร์ (หลายรายการ) แบบอ่านอย่างเดียว
+
+#     class Meta:
+#         model = Order
+#         fields = '__all__' # แสดงทุกฟิลด์ในโมเดล Order
 
 # Serializer สำหรับ Order
 class OrderSerializer(serializers.ModelSerializer):

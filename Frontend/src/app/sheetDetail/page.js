@@ -216,6 +216,7 @@ import Image from "next/image";
 import Container from "@/components/Container";
 import { YELLOW_COLOR, WHITE_COLOR, BLUE_COLOR, LIGHT_BLUE_COLOR, API_IP } from "@/components/Constant";
 import axios from 'axios';
+import { Suspense } from 'react';
 
 // คงที่ mockData และ initData เหมือนเดิม
 const mockData = {

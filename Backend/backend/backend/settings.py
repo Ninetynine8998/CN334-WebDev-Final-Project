@@ -81,7 +81,9 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        # เปลี่ยน NAME ให้ชี้ไปที่ Directory ที่ Mount Volume + ชื่อไฟล์ db.sqlite3
+        # ถ้า Mount Volume ที่ /app/data
+        'NAME': os.path.join('/app/data', 'db.sqlite3'), # <-- แก้ไขบรรทัดนี้
     }
 }
 
